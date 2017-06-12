@@ -52,7 +52,7 @@ public class MainController implements IMainController {
 			
 			try {
 				String name = null;
-				rs = MySQLAccess.doQuery("SELECT name FROM operator WHERE id = " + sequence("RM208 Enter Operator ID")); //TODO add method to get id
+				rs = MySQLAccess.doQuery("SELECT name FROM operator WHERE id = " + sequence("RM208 Enter your operator id")); //TODO add method to get id
 					while(rs.next()){
 						name = rs.getString("name");
 						break;
@@ -82,18 +82,34 @@ public class MainController implements IMainController {
 
 			for (Object o: materials) { //For each material in the receipt...
 				
-				while(!(sequence("RM208 Is the weight idle?").equals("ok"))) { 
+				while(!(sequence("RM208 Check if the weight is idle").equals("ok"))) { 
 					//TODO DALException? Check if weight actually is 0?
 					System.out.println("Press ok on simulator to continue...");	
 				}
 							
+				sequence("T");
+				
 				Wait(500);
 				
 				//Insert tara container and tara its weight
-				while(!sequence("RM208 Place taracontainer on the weight").equals("ok"))) {
+				while(!sequence("RM208 Place taracontainer on the weight").equals("ok")) {
 					//TODO Check if weight has changed?
-					System.out.println("");
+					System.out.println("Taracointainer weight not recieved...");
 				}
+				
+				sequence("T"); //TODO register tara containers weight...
+				
+				Wait(500);
+				
+				//Material batch number...
+				
+				while (!(sequence("RM208 Enter product batch number").equals("ok"))) {
+					//TODO validate
+					System.out.println("Product batch number not recieved...");
+				}
+				
+				
+				
 				
 				Wait(500);
 				
@@ -128,7 +144,6 @@ public class MainController implements IMainController {
 				e.printStackTrace();
 			}
 		}
-
 	}
 
 	private void Wait(int milliseconds) {
