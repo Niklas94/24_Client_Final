@@ -15,35 +15,20 @@ public class SocketController implements ISocketController {
 	static BufferedReader fromSocket, fromUser;
 	static Scanner inFromSocket;
 	static InputStream inStream;
+	static Socket socket;
 	boolean waiting;
 
-
-	public void run() {
-
-		while(true){
-			connect();
-		}
-	}
-
+	@Override
 	public void connect() {
 
 		try {
-			Socket socket = new Socket(address, PORT);
+			socket = new Socket(address, PORT);
 			System.out.println("Connection established.");
 			toSocket = new DataOutputStream(socket.getOutputStream());
 			inStream = socket.getInputStream();
 			inFromSocket = new Scanner(inStream);
 			fromUser = new BufferedReader(new InputStreamReader(System.in));
 			fromSocket = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-
-			synchronized(this) {
-				try {
-					this.wait();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -53,43 +38,28 @@ public class SocketController implements ISocketController {
 
 	@Override
 	public void sendMessage(String msg) {
-
 		try {
 			if (toSocket != null) {
-				toSocket.writeBytes(msg  + " \n\r");
+				toSocket.writeBytes(msg  + "\n\r");
 			}
-
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	@Override
 	public String receiveMessage() throws NoInputFoundException {
-		boolean received = false;
-
+		
 		String inLine = "";
 		try {
-			while(true){
+			while(inLine.equals("")){
 				if(inStream.available() > 0){
-					received = true;
-					break;
+					inLine = inFromSocket.nextLine();					
 				}
 			}
-			if (received){
-				inLine = inFromSocket.nextLine();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		//if(!inLine.equals("")){
+		} catch (IOException e) { e.printStackTrace(); }
 		return inLine;
-		//	}
-
-		//throw new NoInputFoundException("No input from socket.");
 	}
 
 	@Override
@@ -98,11 +68,28 @@ public class SocketController implements ISocketController {
 	}
 
 	@Override
-	public void closeConnection(Socket socket) {
+	public void closeConnection() {
 		try {
 			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public String readFromWeight() {
+		String msg = "";
+		try {
+			while(true) {
+				if (inStream.available() > 0) {
+					msg = fromSocket.readLine();
+					break;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return msg;
+	}
+
 }
